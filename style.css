@@ -32,6 +32,10 @@ body {
   padding: 2.5rem;
 
   display: flex;
+
+  @media (max-width: 600px) {
+    flex-direction: column;
+  }
 }
 
 /* GENERAL */
@@ -47,6 +51,16 @@ a:visited {
   padding: 3rem 5rem 4rem 5rem;
   display: flex;
   flex-direction: column;
+  z-index: 999;
+
+  @media (max-width: 600px) {
+    flex-basis: 30rem;
+    height: 40vh;
+    padding: 1rem 2rem;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+  }
 }
 
 .logo {
@@ -60,6 +74,10 @@ a:visited {
   height: 77vh;
   overflow-y: scroll;
   overflow-x: hidden;
+
+  @media (max-width: 600px) {
+    height: 15vh;
+  }
 }
 
 .workouts::-webkit-scrollbar {
@@ -126,6 +144,11 @@ a:visited {
   /* Match height and activity boxes */
   height: 9.25rem;
   transition: all 0.5s, transform 1ms;
+
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr;
+    padding: 0;
+  }
 }
 
 .form.hidden {
