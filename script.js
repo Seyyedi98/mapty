@@ -7,10 +7,12 @@ const inputDistance = document.querySelector('.form__input--distance');
 const inputDuration = document.querySelector('.form__input--duration');
 const inputCadence = document.querySelector('.form__input--cadence');
 const inputElevation = document.querySelector('.form__input--elevation');
+const goto = document.querySelector('.goto');
 
 class Workout {
   date = new Date();
   id = (Date.now() + '').slice(-10);
+  clicks = 0;
 
   constructor(coords, distance, duration) {
     this.coords = coords; // [lat,lan]
@@ -25,6 +27,11 @@ class Workout {
     this.description = `${this.type[0].toUpperCase()}${this.type.slice(1)} on ${
       months[this.date.getMonth()]
     } ${this.date.getDate()}`;
+  }
+
+  click() {
+    this.clicks++;
+    // console.log(this.clicks);
   }
 }
 
@@ -66,6 +73,7 @@ class Cycling extends Workout {
 
 class App {
   #map;
+  #mapZoomLevel = 13;
   #mapEvent;
   #workouts = [];
 
@@ -74,10 +82,13 @@ class App {
     this._getPosition();
     form.addEventListener('submit', this._newWorkout.bind(this)); // newWorkout this. key is pointing to dom element that attached (form), not the app. So we need to fix it
     inputType.addEventListener('change', this._toggleElevationField);
+    containerWorkouts.addEventListener('click', this._moveToPopup.bind(this));
+
+    // goto.addEventListener('click', this._goCurrentLocations.bind(this));
   }
 
   _getPosition() {
-    // navigator takes two functions. forst for when getting coordinate is done, anothe one for fail
+    // navigator takes two functions. first for when getting coordinate is done, another one for fail
     if (navigator.geolocation)
       navigator.geolocation.getCurrentPosition(
         this._loadMap.bind(this), //explained in S15E10 12:30
@@ -94,7 +105,7 @@ class App {
     const coords = [latiude, longitude];
 
     // loadMap is called by getCurrentPosition as a function not a method, and this. keyword is undefined in function. so we must manualy bind it.
-    this.#map = L.map('map').setView(coords, 13); // 13 => zoom
+    this.#map = L.map('map').setView(coords, this.#mapZoomLevel); // 13 => zoom
 
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution:
@@ -251,6 +262,47 @@ class App {
 
     form.insertAdjacentHTML('afterend', html); // insert as .form sibling
   }
+
+  _moveToPopup(e) {
+    // closest is oposite of querySelector. looking for el in parents.
+    const workoutEl = e.target.closest('.workout');
+
+    if (!workoutEl) return;
+
+    const workout = this.#workouts.find(
+      work => work.id === workoutEl.dataset.id
+    );
+
+    this.#map.setView(workout.coords, this.#mapZoomLevel, {
+      animate: true,
+      pan: {
+        duration: 1,
+      },
+    });
+
+    // using the public interface
+    workout.click();
+  }
+
+  // ------------------
+
+  // _goCurrentLocations() {
+  //   let coords;
+  //   navigator.geolocation.getCurrentPosition(
+  //     function (position) {
+  //       const latiude = position.coords.latitude;
+  //       const { longitude } = position.coords;
+  //       coords = [latiude, longitude];
+  //       this.#map.setView(coords, 13);
+  //       console.log(this);
+  //     },
+  //     function () {
+  //       alert('Could not get your position');
+  //     }
+  //   );
+  // }
+
+  // -------------------
 }
 
 const app = new App();
