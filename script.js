@@ -79,7 +79,13 @@ class App {
 
   constructor() {
     // These line run automaticly when class called
+    // Get user's position
     this._getPosition();
+
+    // Get data from localstorage
+    this._getLocalStorage();
+
+    // Attach event handlers
     form.addEventListener('submit', this._newWorkout.bind(this)); // newWorkout this. key is pointing to dom element that attached (form), not the app. So we need to fix it
     inputType.addEventListener('change', this._toggleElevationField);
     containerWorkouts.addEventListener('click', this._moveToPopup.bind(this));
@@ -114,6 +120,10 @@ class App {
 
     // Handling clicks on map, we use map.on instead of addEventListener
     this.#map.on('click', this._showForm.bind(this)); // we attached event handler to map, so lets fix it. because #mapEvent does not work
+
+    this.#workouts.forEach(work => {
+      this._renderWorkoutMarker(work); // Map is allready loaded, so markers can rendered.
+    });
   }
 
   _showForm(mapE) {
@@ -194,6 +204,9 @@ class App {
 
     // Hide the form + Clear input fields
     this._hideForm();
+
+    // Set local storage to all workouts
+    this._setLocalStorage();
   }
 
   _renderWorkoutMarker(workout) {
@@ -281,7 +294,30 @@ class App {
     });
 
     // using the public interface
-    workout.click();
+    // workout.click();
+  }
+
+  _setLocalStorage() {
+    // Save data in local storage, first item is name, second is string that we want to save
+    localStorage.setItem('workouts', JSON.stringify(this.#workouts));
+  }
+
+  _getLocalStorage() {
+    const data = JSON.parse(localStorage.getItem('workouts'));
+
+    if (!data) return;
+
+    this.#workouts = data;
+
+    this.#workouts.forEach(work => {
+      this._renderWorkout(work);
+      // this._renderWorkoutMarker(work); // It doens't work.Because map has not loaded yet.
+    });
+  }
+
+  reset() {
+    localStorage.removeItem('workouts');
+    location.reload();
   }
 
   // ------------------
